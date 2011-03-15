@@ -2,3 +2,35 @@ body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
+
+#uploadList {
+    list-style: none;
+}
+
+#uploadList li {
+    clear: left;
+}
+
+#uploadList img {
+}
+
+#uploadList dl {
+    margin-left: 210px;
+}
+
+#uploadList dl dt {
+    float: left;
+    text-align: left;
+    padding-top: 0.25em;
+}
+
+#uploadList dl dd {
+}
+
+#uploadList .img-container {
+    float: left;
+    height: 150px;
+    width:  150px;
+    border: 1px solid;
+    padding-bottom: 1em;
+}
