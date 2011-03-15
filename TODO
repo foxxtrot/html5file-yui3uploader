@@ -1,0 +1,4 @@
+- Express is saving Base64 Encoded files as ASCII, not Binary
+- Fancy Styling/Transitions
+- Test in FF4 (Does IE9 even support this API?)
+- YUI3 io-stub which mocks out XHR so I can blog this easily
