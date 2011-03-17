@@ -1,5 +1,6 @@
-<label for="file">File:</label>
-<input id="fileElem" type="file" name="file" accept="image/*" multiple />
+<!-- Webkit won't simulate click events to 'display: none' element, but visibility: hidden is apparently okay! -->
+<input id="fileElem" type="file" name="file" accept="image/*" multiple style="visibility: hidden; height: 0; width: 0;" />
+<input type="button" id="addFile" value="Add File" />
 <ul id='uploadList'></ul>
 <script type="text/javascript" src="http://yui.yahooapis.com/3.3.0/build/yui/yui-min.js"></script>
 <script type="text/javascript" src="/javascripts/upload.js"></script>

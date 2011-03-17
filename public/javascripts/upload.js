@@ -9,6 +9,8 @@ YUI.add('io-file', function(Y) {
                     var headers = val.config.headers || {}, boundary = val.config.boundary, parts = val.parts;
 
                     val.config.data = ['--', boundary, '\r\n', val.parts.join(['\r\n--', boundary, '\r\n'].join('')), "\r\n--", boundary, "--\r\n"].join('');
+                    // Quoted Boundaries don't work in the connect server for NodeJS, hence why this in not quoated.
+                    // I've submitted a patch fixing the defect, but for now, I'm just going to leave this unqouted.
                     val.config.headers = Y.merge(headers, { 'Content-Type': ['multipart/form-data; boundary=', boundary].join('')});
 
                     Y.io.http(val.uri, val.config, key);
@@ -104,20 +106,23 @@ YUI({filter: 'RAW'}).use('node', 'node-event-simulate', 'io-file', function(Y) {
     }, '#fileElem');
 
     uploadList.delegate('click', function(ev) {
-        var form = ev.target.ancestor('form');
+        var form = ev.target.ancestor('form'),
+            container = form.ancestor('li');
         if (ev.target.test('[type=reset]')) {
             // TODO: Animate this out.
-            form.ancestor('li').destroy(true);
+            container.remove();
+            container.destroy(true);
         }
-    }, "input[type=reset],input[type=submit]");
+    }, "input[type=reset]");
+
+    Y.on('click', function(ev) {
+        Y.one('#fileElem').simulate('click');
+    }, "#addFile");
 
     uploadList.delegate('submit', function(ev) {
         Y.log('Form submission caught.', 'info');
         var form = ev.target;
-        //form.append('<input type="file" name="files" />');
-        //form.one('input[type=file]').set('files', form.one('img').getData('file'));
         ev.preventDefault();
-        //return;
         Y.io.file('/',
             {
                 method: "POST",
@@ -129,8 +134,14 @@ YUI({filter: 'RAW'}).use('node', 'node-event-simulate', 'io-file', function(Y) {
                 },
                 files: [
                     form.one('img').getData('file')
-                ]
+                ],
+                on: {
+                    success: function(id, resp) {
+                        var container = form.ancestor('li');
+                        container.remove();
+                        container.destroy(true);
+                    }
+                }
             });
-        //ev.target.ancestor('dd').destroy(true);
     }, "form");
 });

@@ -51,8 +51,10 @@ app.post('/', function(req, res, next) {
                 console.log("\nupload %s to %s"
                     , files.files.filename
                     , files.files.path);
-                if (req.headers['x-requested-by'] === 'XMLHttpRequest') {
+                if (req.headers['x-requested-by'] !== 'XMLHttpRequest') {
                     res.redirect('back');
+                } else {
+                    res.send('File processed.');
                 }
             }
         });
