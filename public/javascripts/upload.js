@@ -54,14 +54,18 @@ YUI.add('io-file', function(Y) {
             var reader = new FileReader();
 
             reader.onload = function(e) {
+                Y.log('FileSize: ' + file.size);
+                Y.log('Result Size:' + reader.result.length);
+                // Per RFC 2616 HTTP is not a MIME compliant protocol, whereas I was trying to
+                // upload as Base64 using the Content-Transfer-Encoding MIME Header, that is
+                // not supported. This sucks a bit.
                 parts.push([sub('Content-Disposition: form-data; name="files"; filename="{name}"', file),
                    sub("Content-Type: {type}", file),
-                   "Content-Transfer-Encoding: base64",
                    "",
-                   reader.result.split(',')[1]].join('\r\n'));
+                   reader.result].join('\r\n'));
                 data[i].processed += 1;
             };
-            reader.readAsDataURL(file);
+            reader.readAsBinaryString(file);
         });
 
         if (!laterHandle) {
@@ -71,7 +75,14 @@ YUI.add('io-file', function(Y) {
 }, '1.0.0', { requires: ['io-base', 'io-form'] });
 
 YUI({filter: 'RAW'}).use('node', 'node-event-simulate', 'io-file', function(Y) {
-    var uploadList = Y.one('#uploadList');
+    var uploadList = Y.one('#uploadList'),
+        transistions = {
+            shrinkOut: {
+                easing: 'ease-out',
+                duration: 0.75,
+                height: '0px'
+            }
+        }
     Y.on('change', function(ev) {
         var files = Y.NodeList.getDOMNodes(ev.target.get('files'));
         Y.Array.each(files, function(file) {
@@ -83,22 +94,26 @@ YUI({filter: 'RAW'}).use('node', 'node-event-simulate', 'io-file', function(Y) {
             reader.onload = function(ev) {
                 var imgHeight, imgWidth, containerDimensions = 150;
                 img.set('src', reader.result);
+                img.setStyle('visibility', 'hidden');
                 imgHeight = parseInt(img.getStyle('height'), 10);
                 imgWidth = parseInt(img.getStyle('width'), 10);
 
-                if (imgHeight <= containerDimensions && imgWidth <= containerDimensions) {
-                    img.setStyle('padding', ((containerDimensions - imgHeight)/2) + 'px ' + ((containerDimensions - imgWidth)/2) + 'px');
-                } else if ( imgHeight > imgWidth) {
-                    img.setStyle('height', containerDimensions + 'px');
-                    imgWidth = (containerDimensions / imgHeight) * imgWidth;
-                    img.setStyle('width', imgWidth + 'px');
-                    img.setStyle('padding', '0px ' + ((containerDimensions - imgWidth)/2) + 'px');
-                } else {
-                    img.setStyle('width', containerDimensions + 'px');
-                    imgHeight = (containerDimensions / imgWidth) * imgHeight;
-                    img.setStyle('height', imgHeight + 'px');
-                    img.setStyle('padding', ((containerDimensions - imgHeight)/2) + 'px 0px');
-                }
+                Y.later(25, null, function() {
+                    if (imgHeight <= containerDimensions && imgWidth <= containerDimensions) {
+                        img.setStyle('padding', ((containerDimensions - imgHeight)/2) + 'px ' + ((containerDimensions - imgWidth)/2) + 'px');
+                    } else if ( imgHeight > imgWidth) {
+                        img.setStyle('height', containerDimensions + 'px');
+                        imgWidth = (containerDimensions / imgHeight) * imgWidth;
+                        img.setStyle('width', imgWidth + 'px');
+                        img.setStyle('padding', '0px ' + ((containerDimensions - imgWidth)/2) + 'px');
+                    } else {
+                        img.setStyle('width', containerDimensions + 'px');
+                        imgHeight = (containerDimensions / imgWidth) * imgHeight;
+                        img.setStyle('height', imgHeight + 'px');
+                        img.setStyle('padding', ((containerDimensions - imgHeight)/2) + 'px 0px');
+                    }
+                    img.setStyle('visibility', '');
+                });
             };
             reader.readAsDataURL(file);
             uploadList.append(build);
@@ -110,7 +125,7 @@ YUI({filter: 'RAW'}).use('node', 'node-event-simulate', 'io-file', function(Y) {
             container = form.ancestor('li');
         if (ev.target.test('[type=reset]')) {
             // TODO: Animate this out.
-            container.remove();
+            container.remove(transistions.shrinkOut);
             container.destroy(true);
         }
     }, "input[type=reset]");
@@ -138,8 +153,10 @@ YUI({filter: 'RAW'}).use('node', 'node-event-simulate', 'io-file', function(Y) {
                 on: {
                     success: function(id, resp) {
                         var container = form.ancestor('li');
-                        container.remove();
-                        container.destroy(true);
+                        if (container) {
+                            container.remove();
+                            container.destroy(true);
+                        }
                     }
                 }
             });
