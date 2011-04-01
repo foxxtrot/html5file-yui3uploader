@@ -1,3 +1,10 @@
 HTML5 Uploader in YUI3
 
 An experiment in working with the HTML5 File API for async file uploads using YUI3.
+
+NOTE: I have temporarily put this project on hold. The current implemetation 
+of YUI3 io, while appropriate for 99% of current use cases, isn't flexible
+enough for the needs of this particular project. Luke Smith 
+(http://github.com/lsmith/) is working on a prototype to replace the current
+io implementation that looks really promising. I am planning to devote some
+time to that project.
